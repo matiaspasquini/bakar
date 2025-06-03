@@ -1,5 +1,7 @@
 import React from "react";
-import cocina from '../assets/cocina.jpg'
+import cocina from '../assets/cocinahome.jpg'
+import cocina1 from '../assets/cocinahome1.jpg'
+import cocina2 from '../assets/cocinahome2.jpg'
 
 
 export default function CocinaHomeSection() {
@@ -21,12 +23,12 @@ export default function CocinaHomeSection() {
           className="w-full h-auto object-cover"
         />
         <img
-          src={cocina}
+          src={cocina1}
           alt="Cocina 2"
           className="w-full h-auto object-cover"
         />
         <img
-          src={cocina}
+          src={cocina2}
           alt="Cocina 3"
           className="w-full h-auto object-cover"
         />
