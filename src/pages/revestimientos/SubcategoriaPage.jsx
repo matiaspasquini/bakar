@@ -3,10 +3,10 @@ import React from "react";
 
 import Footer from '../../components/Footer'
 import kokai from '../../assets/revestimientos/kokkai/Kokkai1.jpg'
-import kokai2 from '../../assets/revestimientos/kokkai/Kokkai2.jpg'
-import kokai3 from '../../assets/revestimientos/kokkai/Kokkai3.jpg'
-import kokai4 from '../../assets/revestimientos/kokkai/Kokkai4.jpg'
-import kokai5 from '../../assets/revestimientos/kokkai/Kokkai5.jpg'
+import kokai2 from '../../assets/revestimientos/kokkai/kokkai2.jpg'
+import kokai3 from '../../assets/revestimientos/kokkai/kokkai3.jpg'
+import kokai4 from '../../assets/revestimientos/kokkai/kokkai4.jpg'
+import kokai5 from '../../assets/revestimientos/kokkai/kokkai5.jpg'
 
 import wud from '../../assets/revestimientos/wud/wud.jpg'
 import wud2 from '../../assets/revestimientos/wud/wud2.jpg'
