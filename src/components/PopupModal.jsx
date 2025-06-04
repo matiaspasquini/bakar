@@ -1,10 +1,10 @@
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const PopupModal = () => {
   const [isVisible, setIsVisible] = useState(false);
-  const EXPIRATION_TIME = 10 * 60 * 1000; // 10 minutos en milisegundos
+  const embedRef = useRef(null);
+  const EXPIRATION_TIME = 10 * 60 * 1000; // 10 minutos
 
   useEffect(() => {
     const lastShown = localStorage.getItem("popupLastShown");
@@ -14,6 +14,21 @@ const PopupModal = () => {
       localStorage.setItem("popupLastShown", Date.now().toString());
     }
   }, []);
+
+  useEffect(() => {
+    if (isVisible && embedRef.current) {
+      // Insertamos el HTML del embed
+      embedRef.current.innerHTML = `
+        <blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/reel/Cxd892pLG3l/" data-instgrm-version="14"></blockquote>
+      `;
+
+      // Cargamos el script de Instagram
+      const script = document.createElement("script");
+      script.async = true;
+      script.src = "//www.instagram.com/embed.js";
+      embedRef.current.appendChild(script);
+    }
+  }, [isVisible]);
 
   const handleClose = () => {
     setIsVisible(false);
@@ -27,7 +42,7 @@ const PopupModal = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center"
+          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center px-2"
         >
           <motion.div
             initial={{ scale: 0.8 }}
@@ -42,15 +57,10 @@ const PopupModal = () => {
               ×
             </button>
             <h2 className="text-xl font-semibold mb-4">Novedades</h2>
-            <p className="mb-4">Conocé nuestro nuevo showroom en Jujuy.</p>
-            <div className="aspect-w-16 aspect-h-9">
-              <iframe
-                src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-                title="Video"
-                className="w-full h-64 rounded"
-                allowFullScreen
-              ></iframe>
-            </div>
+            <p className="mb-4"></p>
+
+            {/* Instagram embed container */}
+            <div ref={embedRef}></div>
           </motion.div>
         </motion.div>
       )}
