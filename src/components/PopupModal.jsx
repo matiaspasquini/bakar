@@ -19,7 +19,7 @@ const PopupModal = () => {
     if (isVisible && embedRef.current) {
       // Insertamos el HTML del embed
       embedRef.current.innerHTML = `
-        <blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/reel/Cxd892pLG3l/" data-instgrm-version="14"></blockquote>
+        <blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/reel/CwlRBuTLSBq/" data-instgrm-version="14"></blockquote>
       `;
 
       // Cargamos el script de Instagram
