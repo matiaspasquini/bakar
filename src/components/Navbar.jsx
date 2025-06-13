@@ -102,6 +102,7 @@ export default function Navbar() {
           ))}
 
           <Link to="/escaleras" className={underlineClass}>Escaleras</Link>
+          <Link to="/nosotros" className={underlineClass}>Nosotros</Link>
           <Link to="/contacto" className={underlineClass}>Contacto</Link>
         </nav>
 
@@ -174,6 +175,7 @@ export default function Navbar() {
               ))}
 
               <Link to="/escaleras" className={underlineClass}>Escaleras</Link>
+              <Link to="/nosotros" onClick={() => setMobileMenuOpen(false)}>Nosotros</Link>
               <Link to="/contacto" onClick={() => setMobileMenuOpen(false)}>Contacto</Link>
             </nav>
           </motion.div>

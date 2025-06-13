@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Home from "../pages/HomePage";
 import Contacto from "../pages/Contacto";
+import Nosotros from "../pages/Nosotros"
 
 
 // Mobiliario
@@ -35,6 +36,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/contacto" element={<Contacto />} />
+        <Route path="/nosotros" element={<Nosotros />} />
 
         {/* Mobiliario */}
         <Route path="/mobiliario" element={<MobiliarioPage />} />
