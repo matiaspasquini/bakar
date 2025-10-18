@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
 import useMediaQuery from "../hook/useMediaQuery";
 
 // Imágenes para desktop
@@ -19,37 +19,61 @@ export default function HeroSlider() {
     : [cabildo, escritorio, cocina];
 
   const [current, setCurrent] = useState(0);
+  const [previous, setPrevious] = useState(null);
+  const timeoutRef = useRef(null);
 
   useEffect(() => {
-    const timer = setInterval(() => {
+    timeoutRef.current = setInterval(() => {
+      setPrevious(current);
       setCurrent((prev) => (prev + 1) % images.length);
     }, 5000);
-    return () => clearInterval(timer);
-  }, [images]);
+
+    return () => clearInterval(timeoutRef.current);
+  }, [current, images.length]);
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      <AnimatePresence mode="wait">
+      {/* Imagen anterior con fade-out */}
+      {previous !== null && (
         <motion.img
-          key={images[current]}
-          src={images[current]}
-          alt="hero"
+          key={`prev-${previous}`}
+          src={images[previous]}
+          alt="previous"
           className="absolute w-full h-full object-cover"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.5 }}
+          initial={{ opacity: 1 }}
+          animate={{ opacity: 0 }}
+          transition={{ duration: 1 }}
+          onAnimationComplete={() => setPrevious(null)} // limpia la anterior al terminar
         />
-      </AnimatePresence>
+      )}
+
+      {/* Imagen actual con fade-in */}
+      <motion.img
+        key={`curr-${current}`}
+        src={images[current]}
+        alt="hero"
+        className="absolute w-full h-full object-cover"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1 }}
+      />
+
+      {/* Botones */}
       <button
-        onClick={() => setCurrent((current - 1 + images.length) % images.length)}
-        className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-40 text-white px-3 py-2"
+        onClick={() => {
+          setPrevious(current);
+          setCurrent((current - 1 + images.length) % images.length);
+        }}
+        className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-40 text-white px-3 py-2 z-10"
       >
         ‹
       </button>
       <button
-        onClick={() => setCurrent((current + 1) % images.length)}
-        className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-40 text-white px-3 py-2"
+        onClick={() => {
+          setPrevious(current);
+          setCurrent((current + 1) % images.length);
+        }}
+        className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-40 text-white px-3 py-2 z-10"
       >
         ›
       </button>

@@ -30,7 +30,7 @@ export default function CocinaHomeSection() {
           className="w-full h-auto object-cover"
         />
       </div>
-            <h2 className="text-3xl pt-6 font-semibold mb-4"> Hacemos diseños de cocinas y vestidores a medida</h2>
+            <h2 className="sm:text-3xl px-2 pt-6 font-semibold mb-4"> Hacemos diseños de cocinas y vestidores a medida</h2>
     </section>
   );
 }
