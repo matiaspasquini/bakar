@@ -23,7 +23,6 @@ export default function Footer() {
       </div>
 
       <p className="text-sm text-gray-600">Bakar © Copyright 2025</p>
-      <p className="text-sm text-gray-500 mt-1">By Randev</p>
     </footer>
   );
 }

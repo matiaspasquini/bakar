@@ -1,15 +1,25 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import cocina from '../assets/cocina.jpg'
 
 
 export default function CocinaHomeSection() {
+  const navigate = useNavigate();
+
+  const handleInfoClick = () => {
+    navigate('/mobiliario/vestidores');
+  };
+
   return (
     <section className="py-20 text-center">
       <h2 className="text-3xl font-semibold mb-4">Vestidores</h2>
       <p className="text-gray-500 max-w-2xl mx-auto mb-2">
             Diseños de vanguardia e interiores completos para tener cada cosa en su lugar.
       </p>
-      <p className="text-black font-medium underline mb-12 cursor-pointer hover:opacity-70 transition">
+      <p 
+        className="text-black font-medium underline mb-12 cursor-pointer hover:opacity-70 transition"
+        onClick={handleInfoClick}
+      >
         + info
       </p>
 

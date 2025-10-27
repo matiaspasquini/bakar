@@ -1,10 +1,17 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import cocina from '../assets/cocinahome.jpg'
 import cocina1 from '../assets/cocinahome1.jpg'
 import cocina2 from '../assets/cocinahome2.jpg'
 
 
 export default function CocinaHomeSection() {
+  const navigate = useNavigate();
+
+  const handleInfoClick = () => {
+    navigate('/mobiliario/cocina');
+  };
+
   return (
     <section className="py-20 text-center">
       <h2 className="text-3xl font-semibold mb-4">Cocinas</h2>
@@ -12,7 +19,10 @@ export default function CocinaHomeSection() {
         Nuestros amoblamientos combinan el uso de nobles materiales y un estricto control de calidad,
         con la funcionalidad y estética que nos caracteriza como marca.
       </p>
-      <p className="text-black font-medium underline mb-12 cursor-pointer hover:opacity-70 transition">
+      <p 
+        className="text-black font-medium underline mb-12 cursor-pointer hover:opacity-70 transition"
+        onClick={handleInfoClick}
+      >
         + info
       </p>
 
