@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { EASE_OUT } from "../lib/motion";
 
 const REEL = "https://www.instagram.com/reel/CwlRBuTLSBq/";
 const CLAVE = "popupLastShown";
@@ -60,25 +61,25 @@ const PopupModal = () => {
       {isVisible && (
         <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          animate={{ opacity: 1, transition: { duration: 0.3 } }}
+          exit={{ opacity: 0, transition: { duration: 0.2 } }}
           onClick={handleClose}
-          className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center px-2"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center px-2"
         >
           <motion.div
             role="dialog"
             aria-modal="true"
             aria-labelledby="popup-titulo"
-            initial={{ scale: 0.95 }}
-            animate={{ scale: 1 }}
-            exit={{ scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.96, y: 8 }}
+            animate={{ opacity: 1, scale: 1, y: 0, transition: { duration: 0.35, ease: EASE_OUT } }}
+            exit={{ opacity: 0, scale: 0.98, transition: { duration: 0.15 } }}
             onClick={(e) => e.stopPropagation()}
             className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto relative"
           >
             <button
               onClick={handleClose}
               aria-label="Cerrar"
-              className="absolute top-2 right-3 text-gray-500 hover:text-black text-2xl leading-none"
+              className="presionable absolute top-2 right-3 text-gray-500 hover:text-black transition-colors text-2xl leading-none"
             >
               ×
             </button>

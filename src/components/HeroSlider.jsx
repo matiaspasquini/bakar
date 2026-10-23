@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence, useScroll, useTransform, useReducedMotion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import useMediaQuery from "../hook/useMediaQuery";
+import { EASE_OUT } from "../lib/motion";
 
 // Imágenes para desktop
 import cocina from "../assets/cocina.webp";
@@ -13,64 +14,123 @@ import cocinaMobile from "../assets/mobiliario/cocina/cocina2.webp";
 import cabildoMobile from "../assets/mobiliario/oficinas/oficinas1.webp";
 import escritorioMobile from "../assets/mobiliario/cocina/cocina.webp";
 
-const INTERVALO = 5000;
+const INTERVALO = 6000; // ms que se queda cada foto
 
 export default function HeroSlider() {
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const reducir = useReducedMotion();
   const images = isMobile
     ? [cabildoMobile, escritorioMobile, cocinaMobile]
     : [cabildo, escritorio, cocina];
 
   const [current, setCurrent] = useState(0);
+  const [pausado, setPausado] = useState(false);
   const ir = (paso) => setCurrent((c) => (c + paso + images.length) % images.length);
 
-  // Se reinicia en cada cambio, así un click manual no se pisa con el automático
+  // Se reinicia en cada cambio, así un click manual no se pisa con el automático.
+  // Con la pestaña oculta no avanza.
   useEffect(() => {
+    if (pausado) return;
     const id = setTimeout(() => ir(1), INTERVALO);
     return () => clearTimeout(id);
-  }, [current, images.length]);
+  }, [current, images.length, pausado]);
+
+  useEffect(() => {
+    const onVis = () => setPausado(document.hidden);
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, []);
+
+  // Al scrollear, la foto se queda un poco atrás y se oscurece: el contenido "pasa por encima"
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
+  const y = useTransform(scrollYProgress, [0, 1], ["0%", reducir ? "0%" : "25%"]);
+  const velo = useTransform(scrollYProgress, [0, 1], [0, 0.35]);
 
   return (
-    <section className="relative w-full h-[100svh] overflow-hidden bg-gray-200" aria-label="Proyectos destacados">
-      <AnimatePresence initial={false}>
-        <motion.img
-          key={images[current]}
-          src={images[current]}
-          alt=""
-          fetchpriority={current === 0 ? "high" : undefined}
-          className="absolute inset-0 w-full h-full object-cover"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 1 }}
-        />
-      </AnimatePresence>
+    <motion.section
+      ref={ref}
+      className="relative w-full h-[100svh] overflow-hidden bg-[#ece9e4] touch-pan-y"
+      aria-label="Proyectos destacados"
+      // Swipe en el celular
+      onPanEnd={(_, info) => {
+        if (Math.abs(info.offset.x) > 50 || Math.abs(info.velocity.x) > 400) ir(info.offset.x < 0 ? 1 : -1);
+      }}
+    >
+      <motion.div className="absolute inset-0" style={{ y }}>
+        <AnimatePresence initial={false}>
+          <motion.div
+            key={images[current]}
+            className="absolute inset-0"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.2, ease: "easeInOut" }}
+          >
+            {/* Zoom lento mientras la foto está en pantalla (Ken Burns) */}
+            <motion.img
+              src={images[current]}
+              alt=""
+              fetchpriority={current === 0 ? "high" : undefined}
+              draggable={false}
+              className="w-full h-full object-cover select-none"
+              initial={reducir ? false : { scale: 1.12 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: (INTERVALO + 1200) / 1000, ease: [0.25, 0.1, 0.25, 1] }}
+            />
+          </motion.div>
+        </AnimatePresence>
+      </motion.div>
 
-      <button
+      <motion.div className="absolute inset-0 bg-black pointer-events-none" style={{ opacity: velo }} />
+      {/* Degradado suave abajo para que el indicador se lea sobre cualquier foto */}
+      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
+
+      <motion.button
         onClick={() => ir(-1)}
         aria-label="Foto anterior"
-        className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-2 z-10 transition-colors"
+        className="presionable absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full border border-white/50 text-white backdrop-blur-sm bg-black/10 hover:bg-white hover:text-black transition-[transform,background-color,color] duration-300 hidden sm:flex items-center justify-center"
+        initial={{ opacity: 0, x: -10 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.6, ease: EASE_OUT, delay: 0.6 }}
       >
         <ChevronLeft className="w-5 h-5" />
-      </button>
-      <button
+      </motion.button>
+      <motion.button
         onClick={() => ir(1)}
         aria-label="Foto siguiente"
-        className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-2 z-10 transition-colors"
+        className="presionable absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full border border-white/50 text-white backdrop-blur-sm bg-black/10 hover:bg-white hover:text-black transition-[transform,background-color,color] duration-300 hidden sm:flex items-center justify-center"
+        initial={{ opacity: 0, x: 10 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.6, ease: EASE_OUT, delay: 0.6 }}
       >
         <ChevronRight className="w-5 h-5" />
-      </button>
+      </motion.button>
 
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+      {/* Indicador tipo "historias": cada barra se llena mientras dura su foto */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-10">
         {images.map((src, i) => (
           <button
             key={src}
             onClick={() => setCurrent(i)}
             aria-label={`Ir a la foto ${i + 1}`}
-            className={`h-[3px] w-8 transition-colors ${i === current ? "bg-white" : "bg-white/40"}`}
-          />
+            aria-current={i === current}
+            className="py-3"
+          >
+            <span className="block h-[2px] w-10 md:w-14 bg-white/35 overflow-hidden">
+              <span
+                key={i === current ? `${current}-${pausado}` : "x"}
+                className="block h-full bg-white origin-left"
+                style={{
+                  transform: i < current ? "scaleX(1)" : "scaleX(0)",
+                  animation:
+                    i === current && !pausado ? `llenar ${INTERVALO}ms linear forwards` : undefined,
+                }}
+              />
+            </span>
+          </button>
         ))}
       </div>
-    </section>
+    </motion.section>
   );
 }

@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 const MIN_MENSAJE = 20;
 
 const inputClass =
-  "w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-black transition-colors";
+  "w-full border border-gray-300 p-3 rounded bg-white hover:border-gray-400 focus:outline-none focus:border-black focus:ring-4 focus:ring-black/5 transition-[border-color,box-shadow] duration-200";
 const labelClass = "block text-sm font-medium text-gray-700 mb-1";
 
 export default function ContactForm() {
@@ -77,17 +77,18 @@ export default function ContactForm() {
       <button
         type="submit"
         disabled={estado === "enviando"}
-        className="bg-black text-white px-6 py-3 rounded hover:bg-gray-800 transition-colors disabled:opacity-60"
+        className="presionable group inline-flex items-center gap-2 bg-black text-white px-6 py-3 rounded hover:bg-gray-800 transition-[transform,background-color] duration-200 disabled:opacity-60"
       >
         {estado === "enviando" ? "Enviando…" : "Enviar"}
+        {estado !== "enviando" && <span className="flecha" aria-hidden>→</span>}
       </button>
 
       <AnimatePresence>
         {(estado === "ok" || estado === "error") && (
           <motion.p
             role="status"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 8, filter: "blur(4px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             exit={{ opacity: 0 }}
             className={`p-4 rounded text-sm ${estado === "ok" ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"}`}
           >

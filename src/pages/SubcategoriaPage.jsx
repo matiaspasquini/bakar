@@ -1,5 +1,7 @@
 import React from "react";
 import { useParams } from "react-router-dom";
+import { motion } from "framer-motion";
+import { fadeUp, stagger } from "../lib/motion";
 import { buscarCategoria } from "../data/catalogo";
 import Encabezado from "../components/Encabezado";
 import Galeria from "../components/Galeria";
@@ -32,17 +34,22 @@ export default function SubcategoriaPage() {
       />
 
       {sub.ficha && (
-        <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 text-sm text-gray-700">
+        <motion.dl
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 text-sm text-gray-700"
+          variants={stagger(0.07, 0.35)}
+          initial="hidden"
+          animate="show"
+        >
           {camposFicha.map(({ clave, label, icono }) => (
-            <div key={clave} className="flex items-start gap-3">
+            <motion.div key={clave} variants={fadeUp} className="flex items-start gap-3">
               <img src={icono} alt="" className="w-12 h-12 shrink-0" />
               <div>
                 <dt className="font-semibold text-black">{label}</dt>
                 <dd>{sub.ficha[clave]}</dd>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </dl>
+        </motion.dl>
       )}
 
       <Galeria fotos={sub.fotos} nombre={sub.nombre} />

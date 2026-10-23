@@ -1,4 +1,6 @@
 import React from "react";
+import { motion } from "framer-motion";
+import { fadeUp, VIEWPORT } from "../lib/motion";
 import HeroSlider from "../components/HeroSlider";
 import SeccionHome from "../components/SeccionHome";
 import PopupModal from "../components/PopupModal";
@@ -26,9 +28,15 @@ export default function HomePage() {
         link="/mobiliario/vestidores"
         fotos={[vestidor, vestidor1]}
       />
-      <p className="text-xl sm:text-3xl font-semibold text-center px-4 pb-20">
+      <motion.p
+        variants={fadeUp}
+        initial="hidden"
+        whileInView="show"
+        viewport={VIEWPORT}
+        className="text-xl sm:text-3xl font-semibold tracking-tight text-center px-4 pb-24"
+      >
         Hacemos diseños de cocinas y vestidores a medida
-      </p>
+      </motion.p>
     </>
   );
 }

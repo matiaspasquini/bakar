@@ -1,11 +1,18 @@
 // Catálogo de productos: una sola fuente para el menú, las páginas de categoría
 // y las galerías. Para sumar fotos alcanza con agregar .webp a la carpeta
 // correspondiente en src/assets (se ordenan por nombre de archivo).
+// medidas.json guarda ancho y alto de cada foto para reservar su lugar antes
+// de que cargue; si una foto nueva no está ahí, se usa 3:2.
+
+import medidas from "./medidas.json";
 
 const fotos = (glob) =>
   Object.keys(glob)
     .sort()
-    .map((ruta) => glob[ruta]);
+    .map((ruta) => {
+      const [ancho, alto] = medidas[ruta.replace("../assets/", "")] || [3, 2];
+      return { src: glob[ruta], ancho, alto };
+    });
 
 export const catalogo = [
   {

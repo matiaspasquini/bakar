@@ -2,6 +2,110 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
 body {
   @apply bg-white text-black antialiased;
+}
+
+/* Lenis (scroll suave) */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+@layer components {
+  /* Subrayado que se dibuja de izquierda a derecha (transform, no width) */
+  .link-linea {
+    position: relative;
+  }
+  .link-linea::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 350ms var(--ease-out);
+  }
+  .link-linea.activo::after {
+    transform: scaleX(1);
+  }
+
+  /* Respuesta al apretar: cualquier cosa clickeable */
+  .presionable {
+    transition: transform 160ms var(--ease-out);
+  }
+  .presionable:active {
+    transform: scale(0.97);
+  }
+
+  .zoom-hover {
+    transition: transform 900ms var(--ease-out);
+  }
+}
+
+/* Hover solo en dispositivos con mouse: en el celular el tap no deja estados pegados */
+@media (hover: hover) and (pointer: fine) {
+  .link-linea:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+  .group:hover .zoom-hover {
+    transform: scale(1.04);
+  }
+  .group:hover .flecha {
+    transform: translateX(4px);
+  }
+}
+
+.flecha {
+  display: inline-block;
+  transition: transform 300ms var(--ease-out);
+}
+
+/* Cinta de logos de proveedores */
+@keyframes cinta {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.cinta {
+  animation: cinta 40s linear infinite;
+}
+.cinta:hover {
+  animation-play-state: paused;
+}
+
+/* Progreso del hero */
+@keyframes llenar {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cinta {
+    animation: none;
+  }
+  .zoom-hover,
+  .flecha,
+  .presionable {
+    transition: none;
+  }
 }
