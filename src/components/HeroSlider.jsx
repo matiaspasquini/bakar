@@ -84,7 +84,7 @@ export default function HeroSlider() {
 
       <motion.div className="absolute inset-0 bg-black pointer-events-none" style={{ opacity: velo }} />
       {/* Degradado suave abajo para que el indicador se lea sobre cualquier foto */}
-      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
+      <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/55 via-black/15 to-transparent pointer-events-none" />
 
       <motion.button
         onClick={() => ir(-1)}
@@ -107,8 +107,26 @@ export default function HeroSlider() {
         <ChevronRight className="w-5 h-5" />
       </motion.button>
 
-      {/* Indicador tipo "historias": cada barra se llena mientras dura su foto */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+      {/* Leyenda editorial abajo a la izquierda */}
+      <motion.div
+        className="absolute left-5 md:left-12 bottom-8 md:bottom-12 z-10 text-white max-w-xl pointer-events-none"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1, ease: EASE_OUT, delay: 0.4 }}
+      >
+        <p className="text-[11px] uppercase tracking-[0.3em] text-white/70 mb-3">Bakar — Jujuy</p>
+        <h1 className="text-4xl md:text-6xl font-light tracking-[-0.03em] leading-[1]">
+          Carpintería
+          <br />a medida
+        </h1>
+      </motion.div>
+
+      {/* Contador + indicador tipo "historias": cada barra se llena mientras dura su foto */}
+      <div className="absolute right-5 md:right-12 bottom-8 md:bottom-12 flex items-center gap-4 z-10 text-white">
+        <span className="text-[11px] tracking-[0.25em] tabular-nums">
+          {String(current + 1).padStart(2, "0")} / {String(images.length).padStart(2, "0")}
+        </span>
+        <div className="flex gap-2">
         {images.map((src, i) => (
           <button
             key={src}
@@ -117,7 +135,7 @@ export default function HeroSlider() {
             aria-current={i === current}
             className="py-3"
           >
-            <span className="block h-[2px] w-10 md:w-14 bg-white/35 overflow-hidden">
+            <span className="block h-[2px] w-6 md:w-10 bg-white/35 overflow-hidden">
               <span
                 key={i === current ? `${current}-${pausado}` : "x"}
                 className="block h-full bg-white origin-left"
@@ -130,6 +148,7 @@ export default function HeroSlider() {
             </span>
           </button>
         ))}
+        </div>
       </div>
     </motion.section>
   );
