@@ -1,4 +1,3 @@
-// src/hooks/useMediaQuery.js
 import { useEffect, useState } from "react";
 
 export default function useMediaQuery(query) {
@@ -7,8 +6,9 @@ export default function useMediaQuery(query) {
   useEffect(() => {
     const media = window.matchMedia(query);
     const listener = () => setMatches(media.matches);
-    media.addListener(listener);
-    return () => media.removeListener(listener);
+    listener();
+    media.addEventListener("change", listener);
+    return () => media.removeEventListener("change", listener);
   }, [query]);
 
   return matches;

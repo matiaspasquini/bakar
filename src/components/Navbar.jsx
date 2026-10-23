@@ -1,115 +1,116 @@
 import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ChevronDown } from "lucide-react";
-import logo from "../assets/logo.png";
-import logoblanco from "../assets/BakarLogoBlanco.png";
+import logo from "../assets/logo.webp";
+import { catalogo } from "../data/catalogo";
+
+const underlineClass =
+  "relative after:absolute after:-bottom-0.5 after:left-0 after:h-[1px] after:bg-current after:w-0 hover:after:w-full after:transition-all after:duration-300 after:ease-in-out";
+const activoClass = "after:w-full";
+
+const linksSimples = [
+  { label: "Nosotros", to: "/nosotros" },
+  { label: "Contacto", to: "/contacto" },
+];
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [open, setOpen] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState(null);
-  const location = useLocation();
+  const { pathname } = useLocation();
 
   useEffect(() => {
-    const onScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
-    window.addEventListener("scroll", onScroll);
+    const onScroll = () => setIsScrolled(window.scrollY > 10);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const toggleMobileSubmenu = (menu) => {
-    setActiveSubmenu(activeSubmenu === menu ? null : menu);
-  };
+  // Cerrar menús al navegar
+  useEffect(() => {
+    setOpen(null);
+    setMobileMenuOpen(false);
+  }, [pathname]);
 
-  const navTextColor = isScrolled ? "text-black" : "text-black";
-  const underlineClass =
-    "relative after:absolute after:bottom-0 after:left-0 after:h-[1px] after:bg-current after:w-0 hover:after:w-full after:transition-all after:duration-300 after:ease-in-out";
+  // Bloquear el scroll de fondo y cerrar con Escape mientras el menú mobile está abierto
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const onKey = (e) => e.key === "Escape" && setMobileMenuOpen(false);
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [mobileMenuOpen]);
 
-  const menuItems = {
-      Mobiliario: [
-      { label: "Cocinas", path: "/mobiliario/cocina" },
-      { label: "Vestidores", path: "/mobiliario/vestidores" },
-      { label: "Oficinas", path: "/mobiliario/oficinas" },
-      { label: "Rack TV", path: "/mobiliario/racktv" },
-      { label: "Otros", path: "/mobiliario/otros" },
-    ],
-    Revestimientos: [
-      { label: "Kokkai", path: "/revestimientos/kokkai" },
-      { label: "WUD", path: "/revestimientos/wud" },
-      { label: "Bakar", path: "/revestimientos/bakar" },
-    ],
-    Puertas: [
-      { label: "Interior", path: "/puertas/interior" },
-      { label: "Exterior", path: "/puertas/exterior" },
-    ],
-    Decks: [
-      { label: "Wud", path: "/decks/wud" },
-      { label: "Bakar", path: "/decks/bakar" },
-    ],
-  };
+  const navLinkClass = ({ isActive }) => `${underlineClass} ${isActive ? activoClass : ""}`;
 
   return (
     <header
-      className={`fixed top-0 left-0 w-full z-50 transition-colors duration-300 ${
-    mobileMenuOpen ? "bg-white" : isScrolled ? "bg-white/80 backdrop-blur" : "bg-white/100"
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
+        isScrolled ? "bg-white/90 backdrop-blur shadow-sm" : "bg-white"
       }`}
     >
-      <div className="flex items-center justify-between px-8 py-6">
-        <Link to="/" className={`text-2xl font-light ${navTextColor}`}>
-          <img src={logo} className="w-[150px]" alt="Bakar logo" />
+      <div className={`flex items-center justify-between px-6 md:px-8 transition-all duration-300 ${isScrolled ? "py-4" : "py-6"}`}>
+        <Link to="/" aria-label="Bakar — inicio">
+          <img src={logo} className="w-[130px] md:w-[150px]" alt="Bakar" />
         </Link>
 
         {/* Desktop nav */}
-        <nav className={`hidden md:flex items-center gap-6 ${navTextColor}`}>
-          <Link to="/" className={underlineClass}>Inicio</Link>
+        <nav className="hidden md:flex items-center gap-6 text-black">
+          <NavLink to="/" end className={navLinkClass}>Inicio</NavLink>
 
-          {Object.keys(menuItems).map((menu) => (
+          {catalogo.map((cat) => (
             <div
               className="relative"
-              key={menu}
-              onMouseEnter={() => setOpen(menu)}
+              key={cat.slug}
+              onMouseEnter={() => cat.subcategorias && setOpen(cat.slug)}
               onMouseLeave={() => setOpen(null)}
             >
-            <Link
-                to={`/${menu.toLowerCase()}`}
-                onClick={() => setOpen(null)}
-                className={`${underlineClass} capitalize`}
-              >
-                {menu}
-            </Link>
+              <NavLink to={`/${cat.slug}`} className={navLinkClass}>
+                {cat.nombre}
+              </NavLink>
               <AnimatePresence>
-                {open === menu && (
-                  <motion.ul
-                    className="absolute top-8 left-0 bg-white shadow-md rounded px-4 py-2 space-y-2 text-black"
-                    initial={{ opacity: 0, y: -10 }}
+                {open === cat.slug && (
+                  // pt-3 deja un "puente" para que el mouse no pierda el hover al bajar al menú
+                  <motion.div
+                    className="absolute top-full left-0 pt-3"
+                    initial={{ opacity: 0, y: -6 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.15 }}
                   >
-                    {menuItems[menu].map((item) => (
-                      <li key={item.path}>
-                        <Link to={item.path} onClick={() => setOpen(null)}>
-                          {item.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </motion.ul>
+                    <ul className="bg-white shadow-md rounded py-2 min-w-[160px]">
+                      {cat.subcategorias.map((sub) => (
+                        <li key={sub.slug}>
+                          <Link
+                            to={`/${cat.slug}/${sub.slug}`}
+                            className="block px-4 py-1.5 hover:bg-gray-100 transition-colors whitespace-nowrap"
+                          >
+                            {sub.nombre}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </motion.div>
                 )}
               </AnimatePresence>
             </div>
           ))}
 
-          <Link to="/escaleras" className={underlineClass}>Escaleras</Link>
-          <Link to="/nosotros" className={underlineClass}>Nosotros</Link>
-          <Link to="/contacto" className={underlineClass}>Contacto</Link>
+          {linksSimples.map((l) => (
+            <NavLink key={l.to} to={l.to} className={navLinkClass}>{l.label}</NavLink>
+          ))}
         </nav>
 
         {/* Botón hamburguesa mobile */}
         <button
-          className={`md:hidden ${navTextColor}`}
+          className="md:hidden p-1 -mr-1"
           onClick={() => setMobileMenuOpen(true)}
+          aria-label="Abrir menú"
         >
           <Menu className="w-6 h-6" />
         </button>
@@ -118,67 +119,72 @@ export default function Navbar() {
       {/* Menú lateral mobile */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <motion.div
-            initial={{ x: "-100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "-100%" }}
-            transition={{ type: "tween", duration: 0.3 }}
-            className="fixed top-0 left-0 w-64 h-full bg-white shadow-2xl z-[999] p-6"
-          >
-            <button
-              className="mb-6"
+          <>
+            <motion.div
+              className="fixed inset-0 bg-black/40 z-[998] md:hidden"
               onClick={() => setMobileMenuOpen(false)}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            />
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "tween", duration: 0.3 }}
+              className="fixed top-0 left-0 w-72 max-w-[85vw] h-full overflow-y-auto bg-white shadow-2xl z-[999] p-6 md:hidden"
             >
-              <X className="w-6 h-6" />
-            </button>
+              <button className="mb-6 p-1 -ml-1" onClick={() => setMobileMenuOpen(false)} aria-label="Cerrar menú">
+                <X className="w-6 h-6" />
+              </button>
 
-            <nav className="flex flex-col gap-4 text-lg">
-              <Link to="/" onClick={() => setMobileMenuOpen(false)}>
-                Inicio
-              </Link>
+              <nav className="flex flex-col gap-4 text-lg">
+                <Link to="/">Inicio</Link>
 
-              {Object.keys(menuItems).map((section) => (
-                <div key={section}>
-                  <button
-                    onClick={() => toggleMobileSubmenu(section)}
-                    className="flex items-center justify-between w-full"
-                  >
-                    <span className="capitalize">{section}</span>
-                    <ChevronDown
-                      className={`w-4 h-4 transition-transform ${
-                        activeSubmenu === section ? "rotate-180" : ""
-                      }`}
-                    />
-                  </button>
-                  <AnimatePresence>
-                    {activeSubmenu === section && (
-                      <motion.ul
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="pl-4 mt-2 flex flex-col gap-2 text-base text-gray-600"
+                {catalogo.map((cat) =>
+                  cat.subcategorias ? (
+                    <div key={cat.slug}>
+                      <button
+                        onClick={() => setActiveSubmenu(activeSubmenu === cat.slug ? null : cat.slug)}
+                        className="flex items-center justify-between w-full"
+                        aria-expanded={activeSubmenu === cat.slug}
                       >
-                        {menuItems[section].map((item) => (
-                          <li key={item.path}>
-                            <Link
-                              to={item.path}
-                              onClick={() => setMobileMenuOpen(false)}
-                            >
-                              {item.label}
-                            </Link>
-                          </li>
-                        ))}
-                      </motion.ul>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ))}
+                        <span>{cat.nombre}</span>
+                        <ChevronDown
+                          className={`w-4 h-4 transition-transform ${activeSubmenu === cat.slug ? "rotate-180" : ""}`}
+                        />
+                      </button>
+                      <AnimatePresence initial={false}>
+                        {activeSubmenu === cat.slug && (
+                          <motion.ul
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="pl-4 overflow-hidden flex flex-col text-base text-gray-600"
+                          >
+                            <li className="pt-3">
+                              <Link to={`/${cat.slug}`}>Ver todo</Link>
+                            </li>
+                            {cat.subcategorias.map((sub) => (
+                              <li key={sub.slug} className="pt-2">
+                                <Link to={`/${cat.slug}/${sub.slug}`}>{sub.nombre}</Link>
+                              </li>
+                            ))}
+                          </motion.ul>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  ) : (
+                    <Link key={cat.slug} to={`/${cat.slug}`}>{cat.nombre}</Link>
+                  )
+                )}
 
-              <Link to="/escaleras" className={underlineClass}>Escaleras</Link>
-              <Link to="/nosotros" onClick={() => setMobileMenuOpen(false)}>Nosotros</Link>
-              <Link to="/contacto" onClick={() => setMobileMenuOpen(false)}>Contacto</Link>
-            </nav>
-          </motion.div>
+                {linksSimples.map((l) => (
+                  <Link key={l.to} to={l.to}>{l.label}</Link>
+                ))}
+              </nav>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </header>

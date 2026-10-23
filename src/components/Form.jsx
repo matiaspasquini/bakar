@@ -2,99 +2,101 @@ import React, { useRef, useState } from "react";
 import emailjs from "emailjs-com";
 import { motion, AnimatePresence } from "framer-motion";
 
+const MIN_MENSAJE = 20;
+
+const inputClass =
+  "w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-black transition-colors";
+const labelClass = "block text-sm font-medium text-gray-700 mb-1";
+
 export default function ContactForm() {
   const form = useRef();
-  const [sent, setSent] = useState(false);
-  const [showToast, setShowToast] = useState(false);
+  // "idle" | "enviando" | "ok" | "error"
+  const [estado, setEstado] = useState("idle");
 
   const sendEmail = (e) => {
     e.preventDefault();
-
-    const formData = new FormData(form.current);
-    const mensaje = formData.get("mensaje");
-
-    if (mensaje.length < 20) {
-      alert("El mensaje debe tener al menos 20 caracteres.");
-      return;
-    }
+    setEstado("enviando");
 
     emailjs
       .sendForm(
-        "service_7t84cai",   // tu service ID
-        "template_k4yo0xh",  // tu template ID
+        "service_7t84cai", // service ID
+        "template_k4yo0xh", // template ID
         form.current,
-        "4Y3E9eI5lkez2ESeM"  // tu public key
+        "4Y3E9eI5lkez2ESeM" // public key
       )
       .then(
-        (result) => {
-          setSent(true);
-          setShowToast(true);
+        () => {
+          setEstado("ok");
           form.current.reset();
-          setTimeout(() => setShowToast(false), 4000);
+          setTimeout(() => setEstado("idle"), 5000);
         },
         (error) => {
-          alert("Hubo un error. Intentalo nuevamente.");
-          console.log(error.text);
+          setEstado("error");
+          console.error(error.text);
         }
       );
   };
 
   return (
-    <div className="relative">
-      <form ref={form} onSubmit={sendEmail} className="mt-8 space-y-4">
-        <label className="block text-sm font-medium text-gray-700">
-          Motivo de contacto
-        </label>
-        <select name="motivo" className="w-full border border-gray-300 p-3 rounded" required>
+    <form ref={form} onSubmit={sendEmail} className="space-y-4">
+      <h2 className="font-semibold">Escribinos</h2>
+
+      <div>
+        <label htmlFor="motivo" className={labelClass}>Motivo de contacto</label>
+        <select id="motivo" name="motivo" className={inputClass} required>
           <option value="Cotización">Cotización</option>
           <option value="Materiales">Materiales</option>
           <option value="Planos">Planos</option>
           <option value="Otro">Otro</option>
         </select>
+      </div>
 
-        <input
-          type="text"
-          name="nombre"
-          placeholder="Nombre"
-          className="w-full border border-gray-300 p-3 rounded"
-          minLength={2}
-          required
-        />
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          className="w-full border border-gray-300 p-3 rounded"
-          required
-        />
+      <div>
+        <label htmlFor="nombre" className={labelClass}>Nombre</label>
+        <input id="nombre" type="text" name="nombre" autoComplete="name" className={inputClass} minLength={2} required />
+      </div>
+
+      <div>
+        <label htmlFor="email" className={labelClass}>Email</label>
+        <input id="email" type="email" name="email" autoComplete="email" className={inputClass} required />
+      </div>
+
+      <div>
+        <label htmlFor="mensaje" className={labelClass}>Mensaje</label>
         <textarea
+          id="mensaje"
           name="mensaje"
-          placeholder="Mensaje"
-          rows="4"
-          className="w-full border border-gray-300 p-3 rounded"
-          minLength={30}
+          rows="5"
+          className={inputClass}
+          minLength={MIN_MENSAJE}
+          placeholder={`Contanos tu proyecto (mínimo ${MIN_MENSAJE} caracteres)`}
           required
         />
-        <button
-          type="submit"
-          className="bg-black text-white px-6 py-3 rounded hover:bg-gray-800 transition-colors"
-        >
-          Enviar
-        </button>
-      </form>
+      </div>
 
-<AnimatePresence>
-  {showToast && (
-<motion.div
-  initial={{ opacity: 0, y: 30 }}
-  animate={{ opacity: 1, y: 0 }}
-  exit={{ opacity: 0, y: 30 }}
-  className="fixed top-6 -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded-lg shadow-md z-50"
->
-  ¡Mensaje enviado exitosamente! Estaremos comunicándonos contigo a la brevedad.
-</motion.div>
-  )}
-</AnimatePresence>
-    </div>
+      <button
+        type="submit"
+        disabled={estado === "enviando"}
+        className="bg-black text-white px-6 py-3 rounded hover:bg-gray-800 transition-colors disabled:opacity-60"
+      >
+        {estado === "enviando" ? "Enviando…" : "Enviar"}
+      </button>
+
+      <AnimatePresence>
+        {(estado === "ok" || estado === "error") && (
+          <motion.p
+            role="status"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className={`p-4 rounded text-sm ${estado === "ok" ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"}`}
+          >
+            {estado === "ok"
+              ? "¡Mensaje enviado! Nos vamos a comunicar con vos a la brevedad."
+              : "No pudimos enviar el mensaje. Probá de nuevo o escribinos por WhatsApp."}
+          </motion.p>
+        )}
+      </AnimatePresence>
+    </form>
   );
 }

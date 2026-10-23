@@ -1,39 +1,59 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+
+const REEL = "https://www.instagram.com/reel/CwlRBuTLSBq/";
+const CLAVE = "popupLastShown";
+const EXPIRATION_TIME = 24 * 60 * 60 * 1000; // una vez por día
+
+const leer = () => {
+  try {
+    return localStorage.getItem(CLAVE);
+  } catch {
+    return null;
+  }
+};
+const guardar = () => {
+  try {
+    localStorage.setItem(CLAVE, Date.now().toString());
+  } catch {
+    /* modo privado: no pasa nada */
+  }
+};
 
 const PopupModal = () => {
   const [isVisible, setIsVisible] = useState(false);
-  const embedRef = useRef(null);
-  const EXPIRATION_TIME = 10 * 60 * 1000; // 10 minutos
 
   useEffect(() => {
-    const lastShown = localStorage.getItem("popupLastShown");
-
+    const lastShown = leer();
     if (!lastShown || Date.now() - parseInt(lastShown, 10) > EXPIRATION_TIME) {
-      setIsVisible(true);
-      localStorage.setItem("popupLastShown", Date.now().toString());
+      // Esperar un poco para no tapar la home apenas carga
+      const t = setTimeout(() => {
+        setIsVisible(true);
+        guardar();
+      }, 2500);
+      return () => clearTimeout(t);
     }
   }, []);
 
   useEffect(() => {
-    if (isVisible && embedRef.current) {
-      // Insertamos el HTML del embed
-      embedRef.current.innerHTML = `
-        <blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/reel/CwlRBuTLSBq/" data-instgrm-version="14"></blockquote>
-      `;
+    if (!isVisible) return;
+    const onKey = (e) => e.key === "Escape" && setIsVisible(false);
+    window.addEventListener("keydown", onKey);
 
-      // Cargamos el script de Instagram
+    // El blockquote ya trae un link al reel: si el embed de Instagram no carga, no queda vacío
+    if (window.instgrm) {
+      window.instgrm.Embeds.process();
+    } else if (!document.getElementById("instagram-embed")) {
       const script = document.createElement("script");
+      script.id = "instagram-embed";
       script.async = true;
-      script.src = "//www.instagram.com/embed.js";
-      embedRef.current.appendChild(script);
+      script.src = "https://www.instagram.com/embed.js";
+      document.body.appendChild(script);
     }
+    return () => window.removeEventListener("keydown", onKey);
   }, [isVisible]);
 
-  const handleClose = () => {
-    setIsVisible(false);
-    localStorage.setItem("popupLastShown", Date.now().toString());
-  };
+  const handleClose = () => setIsVisible(false);
 
   return (
     <AnimatePresence>
@@ -42,25 +62,40 @@ const PopupModal = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center px-2"
+          onClick={handleClose}
+          className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center px-2"
         >
           <motion.div
-            initial={{ scale: 0.8 }}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="popup-titulo"
+            initial={{ scale: 0.95 }}
             animate={{ scale: 1 }}
-            exit={{ scale: 0.8 }}
-            className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full relative"
+            exit={{ scale: 0.95 }}
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto relative"
           >
             <button
               onClick={handleClose}
-              className="absolute top-2 right-2 text-gray-500 hover:text-black text-xl"
+              aria-label="Cerrar"
+              className="absolute top-2 right-3 text-gray-500 hover:text-black text-2xl leading-none"
             >
               ×
             </button>
-            <h2 className="text-xl font-semibold mb-4">Novedades</h2>
-            <p className="mb-4"></p>
+            <h2 id="popup-titulo" className="text-xl font-semibold mb-4">Novedades</h2>
 
-            {/* Instagram embed container */}
-            <div ref={embedRef}></div>
+            <div>
+              <blockquote
+                className="instagram-media"
+                data-instgrm-permalink={REEL}
+                data-instgrm-version="14"
+                style={{ margin: 0, width: "100%", minWidth: 0 }}
+              >
+                <a href={REEL} target="_blank" rel="noreferrer" className="underline">
+                  Ver el último proyecto en Instagram
+                </a>
+              </blockquote>
+            </div>
           </motion.div>
         </motion.div>
       )}

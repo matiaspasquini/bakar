@@ -1,24 +1,28 @@
 import React from "react";
 import { motion } from "framer-motion";
-import Footer from "../components/Footer"
 
 //imagenes
-import nosotros from "../assets/nosotros/nosotros.png";
-import escalera from "../assets/nosotros/escalera.jpg";
-import casadir from "../assets/nosotros/casadir.jpg";
-import casacor from "../assets/nosotros/casacor.jpg";
-import formobile from "../assets/nosotros/formobile.jpg";
-import paraguay from "../assets/nosotros/paraguay.jpg";
+import nosotros from "../assets/nosotros/nosotros.webp";
+import escalera from "../assets/nosotros/escalera.webp";
+import casadir from "../assets/nosotros/casadir.webp";
+import casacor from "../assets/nosotros/casacor.webp";
+import formobile from "../assets/nosotros/formobile.webp";
+import paraguay from "../assets/nosotros/paraguay.webp";
 
 // logos
-import hiperplaca from "../assets/nosotros/hiperplaca.png";
-import egger from "../assets/nosotros/egger.png";
-import estilo from "../assets/nosotros/estilo.png";
-import maderplak from "../assets/nosotros/maderplak.png";
-import kilowat from "../assets/nosotros/kilowat.png";
-import { div } from "framer-motion/client";
+import hiperplaca from "../assets/nosotros/hiperplaca.webp";
+import egger from "../assets/nosotros/egger.webp";
+import estilo from "../assets/nosotros/estilo.webp";
+import maderplak from "../assets/nosotros/maderplak.webp";
+import kilowat from "../assets/nosotros/kilowat.webp";
 
-const logos = [hiperplaca, egger, estilo, maderplak, kilowat];
+const logos = [
+  { src: hiperplaca, nombre: "Hiperplaca" },
+  { src: egger, nombre: "Egger" },
+  { src: estilo, nombre: "Estilo" },
+  { src: maderplak, nombre: "Maderplak" },
+  { src: kilowat, nombre: "Kilowat" },
+];
 
 const eventos = [
   {
@@ -67,36 +71,40 @@ const eventos = [
 
 export default function Nosotros() {
   return (
-<section>
-        <div className="pt-20 px-6 bg-white">
-      <div className="max-w-7xl mx-auto space-y-24">
+    <>
+      <div className="max-w-7xl mx-auto px-4 md:px-8 space-y-20 md:space-y-28">
         {eventos.map(({ year, title, text, image, reverse }, index) => (
-          <motion.div
-            key={index}
+          <motion.article
+            key={title}
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.6 }}
-            className="grid md:grid-cols-2 gap-12 items-center"
+            className="grid md:grid-cols-2 gap-8 md:gap-12 items-center"
           >
-            <div className={`space-y-4 ${reverse ? 'md:flex-row-reverse' : ''}`}>
+            <div className={`space-y-4 ${reverse ? "md:order-last" : ""}`}>
               {year && (
-                <h3 className="text-5xl font-extralight text-gray-300">
-                  {year}
-                </h3>
+                <p className="text-5xl font-extralight text-gray-300">{year}</p>
               )}
-              <h2 className="text-2xl font-semibold text-black">{title}</h2>
+              {index === 0 ? (
+                <h1 className="text-3xl font-semibold text-black">{title}</h1>
+              ) : (
+                <h2 className="text-2xl font-semibold text-black">{title}</h2>
+              )}
               <p className="text-gray-700 leading-relaxed">{text}</p>
             </div>
             <img
               src={image}
               alt={title}
-              className="w-full h-auto object-cover rounded shadow"
+              loading={index === 0 ? "eager" : "lazy"}
+              decoding="async"
+              className="w-full h-auto object-cover rounded shadow bg-gray-100"
             />
-          </motion.div>
+          </motion.article>
         ))}
       </div>
 
-      <div className="bg-gray-100 py-16 mb-2 px-4 text-center mt-24">
+      <div className="bg-gray-100 py-16 px-4 text-center mt-24 -mb-20">
         <h2 className="text-xl md:text-2xl font-semibold uppercase text-gray-800 mb-6">
           Gracias por ser parte de nuestro crecimiento
         </h2>
@@ -112,19 +120,18 @@ export default function Nosotros() {
           camino!
         </p>
 
-        <div className="mt-12 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6 items-center justify-center">
-          {logos.map((logo, index) => (
+        <div className="max-w-5xl mx-auto mt-12 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6 items-center">
+          {logos.map(({ src, nombre }) => (
             <img
-              key={index}
-              src={logo}
-              alt={`Proveedor ${index + 1}`}
-              className="mx-auto h-20 object-contain filter grayscale hover:filter-none transition"
+              key={nombre}
+              src={src}
+              alt={nombre}
+              loading="lazy"
+              className="mx-auto h-20 object-contain grayscale hover:grayscale-0 transition"
             />
           ))}
         </div>
       </div>
-    </div>
-    <Footer/>
-</section>
+    </>
   );
-}<Footer/>
+}
