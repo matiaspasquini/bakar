@@ -32,7 +32,7 @@ export default function App() {
           exit={{ opacity: 0, transition: { duration: 0.18, ease: "easeOut" } }}
         >
           {/* La home arranca con el hero a pantalla completa; el resto deja lugar al navbar */}
-          <main className={esHome ? "" : "pt-32 pb-20"}>
+          <main className={esHome ? "" : "pt-32"}>
             <Routes location={location}>
               <Route path="/" element={<Home />} />
               <Route path="/contacto" element={<Contacto />} />

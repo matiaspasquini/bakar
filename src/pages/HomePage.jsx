@@ -1,10 +1,10 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { EASE_OUT, fadeUp, stagger, VIEWPORT } from "../lib/motion";
+import { fadeUp, stagger, VIEWPORT } from "../lib/motion";
 import HeroSlider from "../components/HeroSlider";
 import SeccionHome from "../components/SeccionHome";
 import PopupModal from "../components/PopupModal";
+import CierreCTA from "../components/CierreCTA";
 
 import cocina from "../assets/cocinahome.webp";
 import cocina1 from "../assets/cocinahome1.webp";
@@ -19,8 +19,6 @@ const hitos = [
   { dato: "Jujuy · Asunción", detalle: "Primer proyecto internacional en 2024" },
 ];
 
-const label = "text-[11px] uppercase tracking-[0.3em] text-gray-400";
-
 export default function HomePage() {
   return (
     <>
@@ -28,7 +26,7 @@ export default function HomePage() {
       <HeroSlider />
 
       {/* Manifiesto */}
-      <section className="px-5 md:px-12 pt-24 md:pt-40 pb-8 max-w-[1500px] mx-auto">
+      <section className="contenedor pt-24 md:pt-40 pb-8">
         <motion.div
           className="grid md:grid-cols-12 gap-8"
           variants={stagger(0.12)}
@@ -36,7 +34,7 @@ export default function HomePage() {
           whileInView="show"
           viewport={VIEWPORT}
         >
-          <motion.p variants={fadeUp} className={`${label} md:col-span-3 pt-3`}>
+          <motion.p variants={fadeUp} className="rotulo md:col-span-3 pt-3">
             Carpintería a medida — Jujuy
           </motion.p>
           <motion.h2
@@ -87,48 +85,7 @@ export default function HomePage() {
         invertido
       />
 
-      {/* Cierre */}
-      <section className="bg-[#111] text-white">
-        <motion.div
-          className="px-5 md:px-12 py-24 md:py-36 max-w-[1500px] mx-auto grid md:grid-cols-12 gap-10 items-end"
-          variants={stagger(0.12)}
-          initial="hidden"
-          whileInView="show"
-          viewport={VIEWPORT}
-        >
-          <div className="md:col-span-8">
-            <motion.p variants={fadeUp} className="text-[11px] uppercase tracking-[0.3em] text-white/40 mb-6">
-              Tu proyecto
-            </motion.p>
-            <div className="overflow-hidden">
-              <motion.h2
-                className="text-4xl md:text-6xl lg:text-7xl font-light tracking-[-0.04em] leading-[1]"
-                variants={{ hidden: { y: "100%" }, show: { y: 0, transition: { duration: 1, ease: EASE_OUT } } }}
-              >
-                Hacemos diseños de cocinas y vestidores a medida.
-              </motion.h2>
-            </div>
-          </div>
-          <motion.div variants={fadeUp} className="md:col-span-4 md:justify-self-end flex flex-col gap-4">
-            <Link
-              to="/contacto"
-              className="presionable group inline-flex items-center justify-between gap-6 bg-white text-black px-7 py-4 text-sm uppercase tracking-[0.2em] hover:bg-gray-200 transition-[transform,background-color] duration-300"
-            >
-              Pedí tu cotización
-              <span className="flecha" aria-hidden>→</span>
-            </Link>
-            <a
-              href="https://wa.me/5493884723621"
-              target="_blank"
-              rel="noreferrer"
-              className="group inline-flex items-center justify-between gap-6 border border-white/25 px-7 py-4 text-sm uppercase tracking-[0.2em] hover:border-white transition-colors duration-300"
-            >
-              Escribinos por WhatsApp
-              <span className="flecha" aria-hidden>→</span>
-            </a>
-          </motion.div>
-        </motion.div>
-      </section>
+      <CierreCTA titulo="Hacemos diseños de cocinas y vestidores a medida." />
     </>
   );
 }

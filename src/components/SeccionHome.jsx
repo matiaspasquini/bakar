@@ -20,7 +20,7 @@ export default function SeccionHome({ indice, titulo, texto, link, linkTexto, fo
   const yChica = useTransform(scrollYProgress, [0, 1], reducir || !esDesktop ? [0, 0] : [60, -60]);
 
   return (
-    <section ref={ref} className="px-5 md:px-12 py-20 md:py-36 max-w-[1500px] mx-auto">
+    <section ref={ref} className="contenedor py-20 md:py-36">
       {/* Encabezado */}
       <motion.div
         className={`grid md:grid-cols-12 gap-6 md:gap-8 items-end mb-12 md:mb-20 ${invertido ? "md:text-right" : ""}`}
@@ -30,7 +30,7 @@ export default function SeccionHome({ indice, titulo, texto, link, linkTexto, fo
         viewport={VIEWPORT}
       >
         <div className={`md:col-span-7 ${invertido ? "md:order-last md:col-start-6" : ""}`}>
-          <motion.p variants={fadeUp} className="text-[11px] uppercase tracking-[0.3em] text-gray-400 mb-5">
+          <motion.p variants={fadeUp} className="rotulo mb-5">
             {indice} — Mobiliario a medida
           </motion.p>
           <div className="overflow-hidden">

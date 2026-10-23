@@ -24,6 +24,16 @@ html.lenis body {
 }
 
 @layer components {
+  /* Ancho y márgenes comunes a todas las páginas */
+  .contenedor {
+    @apply w-full max-w-[1500px] mx-auto px-5 md:px-12;
+  }
+
+  /* Etiqueta chica en versalitas espaciadas (índices, rótulos) */
+  .rotulo {
+    @apply text-[11px] uppercase tracking-[0.3em] text-gray-400;
+  }
+
   /* Subrayado que se dibuja de izquierda a derecha (transform, no width) */
   .link-linea {
     position: relative;

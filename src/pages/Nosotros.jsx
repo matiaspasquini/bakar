@@ -1,6 +1,8 @@
 import React from "react";
 import { motion } from "framer-motion";
 import Foto from "../components/Foto";
+import Encabezado from "../components/Encabezado";
+import CierreCTA from "../components/CierreCTA";
 import { EASE_OUT, fadeUp, stagger, VIEWPORT } from "../lib/motion";
 
 //imagenes
@@ -72,52 +74,101 @@ const eventos = [
 ];
 
 export default function Nosotros() {
+  const [intro, ...hitos] = eventos;
+
   return (
     <>
-      <div className="max-w-7xl mx-auto px-4 md:px-8 space-y-24 md:space-y-36">
-        {eventos.map(({ year, title, text, image, reverse }, index) => (
-          <article key={title} className="grid md:grid-cols-2 gap-8 md:gap-16 items-center">
-            <motion.div
-              className={`space-y-4 ${reverse ? "md:order-last" : ""}`}
-              variants={stagger(0.08)}
-              initial="hidden"
-              whileInView="show"
-              viewport={VIEWPORT}
-            >
-              {year && (
-                <div className="overflow-hidden">
+      <section className="contenedor pb-24 md:pb-36">
+        <Encabezado rotulo="Bakar — Jujuy" titulo="Nosotros" />
+
+        {/* Quiénes somos: foto grande y el texto como manifiesto */}
+        <div className="grid md:grid-cols-12 gap-8 md:gap-12 items-end">
+          <Foto src={intro.image} alt="El equipo de Bakar" eager className="md:col-span-7 aspect-[4/3]" />
+          <motion.div
+            className="md:col-span-5"
+            variants={stagger(0.1)}
+            initial="hidden"
+            whileInView="show"
+            viewport={VIEWPORT}
+          >
+            <motion.h2 variants={fadeUp} className="rotulo mb-5">{intro.title}</motion.h2>
+            <motion.p variants={fadeUp} className="text-2xl md:text-3xl font-light leading-snug tracking-tight">
+              {intro.text}
+            </motion.p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Recorrido: el año queda fijo a la izquierda mientras pasan los hitos */}
+      <section className="contenedor pb-24 md:pb-40">
+        <motion.p
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="show"
+          viewport={VIEWPORT}
+          className="rotulo border-t border-gray-200 pt-6 mb-16 md:mb-24"
+        >
+          Recorrido
+        </motion.p>
+
+        <div className="space-y-24 md:space-y-40">
+          {hitos.map(({ year, title, text, image }, index) => (
+            <article key={title} className="grid md:grid-cols-12 gap-6 md:gap-8">
+              <div className="md:col-span-3">
+                <div className="md:sticky md:top-32 overflow-hidden">
                   <motion.p
-                    className="text-6xl md:text-7xl font-extralight text-gray-300 tracking-tight"
-                    variants={{ hidden: { y: "100%" }, show: { y: 0, transition: { duration: 0.9, ease: EASE_OUT } } }}
+                    className="text-7xl md:text-8xl font-extralight tracking-[-0.05em] text-gray-300 tabular-nums"
+                    initial={{ y: "100%" }}
+                    whileInView={{ y: 0 }}
+                    viewport={VIEWPORT}
+                    transition={{ duration: 1, ease: EASE_OUT }}
                   >
-                    {year}
+                    {/* El año se muestra solo cuando cambia */}
+                    {index > 0 && hitos[index - 1].year === year ? "" : year}
                   </motion.p>
                 </div>
-              )}
-              {index === 0 ? (
-                <motion.h1 variants={fadeUp} className="text-3xl md:text-4xl font-semibold tracking-tight">{title}</motion.h1>
-              ) : (
-                <motion.h2 variants={fadeUp} className="text-2xl md:text-3xl font-semibold tracking-tight">{title}</motion.h2>
-              )}
-              <motion.p variants={fadeUp} className="text-gray-700 leading-relaxed">{text}</motion.p>
-            </motion.div>
-            <Foto src={image} alt={title} eager={index === 0} className="rounded-sm" />
-          </article>
-        ))}
-      </div>
+              </div>
 
-      <div className="bg-gray-100 py-20 text-center mt-28 -mb-20 overflow-hidden">
+              <div className={`md:col-span-9 grid md:grid-cols-9 gap-6 md:gap-8 items-end`}>
+                <Foto
+                  src={image}
+                  alt={title}
+                  className={`aspect-[4/3] ${index % 2 ? "md:col-span-5 md:col-start-5 md:order-last" : "md:col-span-6"}`}
+                />
+                <motion.div
+                  className={index % 2 ? "md:col-span-4 md:col-start-1 md:row-start-1" : "md:col-span-3"}
+                  variants={stagger(0.08)}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={VIEWPORT}
+                >
+                  <motion.p variants={fadeUp} className="rotulo mb-3 tabular-nums">
+                    {String(index + 1).padStart(2, "0")} / {String(hitos.length).padStart(2, "0")}
+                  </motion.p>
+                  <motion.h3 variants={fadeUp} className="text-2xl md:text-3xl font-light tracking-[-0.02em] mb-4">
+                    {title}
+                  </motion.h3>
+                  <motion.p variants={fadeUp} className="text-gray-600 leading-relaxed">{text}</motion.p>
+                </motion.div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {/* Agradecimiento + proveedores */}
+      <section className="bg-[#f4f3f1] py-24 md:py-36 overflow-hidden">
         <motion.div
-          className="px-4"
-          variants={stagger(0.08)}
+          className="contenedor grid md:grid-cols-12 gap-8"
+          variants={stagger(0.1)}
           initial="hidden"
           whileInView="show"
           viewport={VIEWPORT}
         >
-          <motion.h2 variants={fadeUp} className="text-xl md:text-2xl font-semibold uppercase tracking-wide text-gray-800 mb-6">
+          <motion.h2 variants={fadeUp} className="rotulo md:col-span-3 pt-2">
             Gracias por ser parte de nuestro crecimiento
           </motion.h2>
-          <motion.p variants={fadeUp} className="max-w-3xl mx-auto text-gray-700 leading-relaxed">
+          <motion.p variants={fadeUp} className="md:col-span-8 md:col-start-5 text-xl md:text-2xl font-light leading-relaxed text-gray-800">
             Cada proyecto es el resultado de la pasión, el compromiso y el
             trabajo en equipo. Queremos expresar nuestro más sincero
             agradecimiento a nuestros proveedores, quienes nos brindan
@@ -132,7 +183,7 @@ export default function Nosotros() {
 
         {/* Cinta continua de proveedores (la lista va duplicada para que el loop no tenga corte) */}
         <div
-          className="mt-14 [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]"
+          className="mt-20 [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]"
           aria-label="Proveedores"
         >
           <div className="cinta flex w-max">
@@ -142,12 +193,14 @@ export default function Nosotros() {
                 src={src}
                 alt={i < logos.length ? nombre : ""}
                 aria-hidden={i >= logos.length}
-                className="h-20 w-40 mx-6 object-contain grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition duration-300"
+                className="h-20 w-40 mx-8 object-contain grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition duration-300"
               />
             ))}
           </div>
         </div>
-      </div>
+      </section>
+
+      <CierreCTA />
     </>
   );
 }

@@ -9,8 +9,8 @@ const MAPA =
 
 export default function Contacto() {
   return (
-    <section className="max-w-7xl mx-auto px-4 md:px-8">
-      <Encabezado titulo="Contacto" />
+    <section className="contenedor pb-24">
+      <Encabezado rotulo="Fábrica en San Salvador de Jujuy" titulo="Contacto" bajada="Contanos tu proyecto: te respondemos con una propuesta y los próximos pasos." />
 
       <div className="grid md:grid-cols-2 gap-12 items-start">
         <motion.div className="space-y-8" variants={stagger(0.08, 0.25)} initial="hidden" animate="show">
