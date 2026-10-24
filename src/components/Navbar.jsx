@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
-import { Menu, X, ChevronDown } from "lucide-react";
 import logo from "../assets/logo.webp";
 import { catalogo } from "../data/catalogo";
 import { EASE_OUT, EASE_DRAWER } from "../lib/motion";
@@ -12,10 +11,10 @@ const linksSimples = [
   { label: "Contacto", to: "/contacto" },
 ];
 
-// Ítems del menú mobile: entran escalonados desde la izquierda
+// Ítems del menú mobile: suben escalonados
 const itemMobile = {
-  hidden: { opacity: 0, x: -16 },
-  show: { opacity: 1, x: 0, transition: { duration: 0.4, ease: EASE_OUT } },
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE_OUT } },
 };
 
 export default function Navbar() {
@@ -71,8 +70,14 @@ export default function Navbar() {
   return (
     <motion.header
       className={`fixed top-0 left-0 w-full z-50 transition-[background-color,box-shadow,color] duration-500 ${
-        sobreHero ? "bg-transparent text-white" : open ? "bg-white text-black" : "bg-white/90 backdrop-blur-md text-black"
-      } ${isScrolled && !sobreHero ? "shadow-[0_1px_0_rgba(0,0,0,0.06)]" : ""}`}
+        mobileMenuOpen
+          ? "bg-transparent text-white"
+          : sobreHero
+          ? "bg-transparent text-white"
+          : open
+          ? "bg-white text-black"
+          : "bg-white/90 backdrop-blur-md text-black"
+      } ${isScrolled && !sobreHero && !mobileMenuOpen ? "shadow-[0_1px_0_rgba(0,0,0,0.06)]" : ""}`}
       onMouseLeave={() => setOpen(null)}
       animate={{ y: oculto && !mobileMenuOpen && !open ? "-100%" : "0%" }}
       transition={{ duration: 0.35, ease: EASE_OUT }}
@@ -84,11 +89,11 @@ export default function Navbar() {
         }`}
       />
 
-      <div className={`flex items-center justify-between px-6 md:px-8 transition-[padding] duration-500 ${isScrolled ? "py-4" : "py-6"}`}>
+      <div className={`relative z-10 flex items-center justify-between px-6 md:px-8 transition-[padding] duration-500 ${isScrolled ? "py-4" : "py-6"}`}>
         <Link to="/" aria-label="Bakar — inicio" className="presionable">
           <img
             src={logo}
-            className={`w-[130px] md:w-[150px] transition-[filter] duration-500 ${sobreHero ? "invert" : ""}`}
+            className={`w-[130px] md:w-[150px] transition-[filter] duration-500 ${sobreHero || mobileMenuOpen ? "invert" : ""}`}
             alt="Bakar"
           />
         </Link>
@@ -117,13 +122,28 @@ export default function Navbar() {
           ))}
         </nav>
 
-        {/* Botón hamburguesa mobile */}
+        {/* Botón mobile: dos líneas que se cruzan en una X */}
         <button
-          className="md:hidden p-1 -mr-1 presionable"
-          onClick={() => setMobileMenuOpen(true)}
-          aria-label="Abrir menú"
+          className="md:hidden presionable flex items-center gap-3 -mr-1 p-1"
+          onClick={() => setMobileMenuOpen((v) => !v)}
+          aria-label={mobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
+          aria-expanded={mobileMenuOpen}
         >
-          <Menu className="w-6 h-6" />
+          <span className="text-[11px] uppercase tracking-[0.25em]">{mobileMenuOpen ? "Cerrar" : "Menú"}</span>
+          <span className="relative block w-6 h-3">
+            <span
+              className={`absolute left-0 w-full h-px bg-current transition-transform duration-500 ${
+                mobileMenuOpen ? "top-1/2 rotate-45" : "top-0"
+              }`}
+              style={{ transitionTimingFunction: "var(--ease-out)" }}
+            />
+            <span
+              className={`absolute left-0 w-full h-px bg-current transition-transform duration-500 ${
+                mobileMenuOpen ? "top-1/2 -rotate-45" : "bottom-0"
+              }`}
+              style={{ transitionTimingFunction: "var(--ease-out)" }}
+            />
+          </span>
         </button>
       </div>
 
@@ -229,90 +249,119 @@ export default function Navbar() {
         )}
       </AnimatePresence>
 
-      {/* Menú lateral mobile */}
+      {/* Menú mobile a pantalla completa: baja una cortina oscura (misma tinta que
+          el cierre y el footer), el catálogo en grande y numerado, y cada categoría
+          despliega sus subcategorías como una tira de fotos que se desliza. */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <>
-            <motion.div
-              className="fixed inset-0 h-[100dvh] bg-black/40 backdrop-blur-[2px] z-[998] md:hidden"
-              onClick={() => setMobileMenuOpen(false)}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0, transition: { duration: 0.2 } }}
-            />
-            <motion.div
-              initial={{ x: "-100%" }}
-              animate={{ x: 0, transition: { duration: 0.5, ease: EASE_DRAWER } }}
-              exit={{ x: "-100%", transition: { duration: 0.25, ease: EASE_OUT } }}
-              // Arrastrar hacia la izquierda también lo cierra
-              drag="x"
-              dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={{ left: 0.6, right: 0.05 }}
-              onDragEnd={(_, info) => {
-                if (info.offset.x < -80 || info.velocity.x < -400) setMobileMenuOpen(false);
-              }}
-              className="fixed top-0 left-0 w-72 max-w-[85vw] h-[100dvh] overflow-y-auto bg-white text-black shadow-2xl z-[999] p-6 md:hidden"
-            >
-              <button className="mb-8 p-1 -ml-1 presionable" onClick={() => setMobileMenuOpen(false)} aria-label="Cerrar menú">
-                <X className="w-6 h-6" />
-              </button>
-
+          <motion.div
+            className="md:hidden absolute top-0 left-0 w-full h-[100dvh] bg-[#111] text-white overflow-y-auto overscroll-contain"
+            initial={{ clipPath: "inset(0 0 100% 0)" }}
+            animate={{ clipPath: "inset(0 0 0% 0)", transition: { duration: 0.6, ease: EASE_DRAWER } }}
+            exit={{ clipPath: "inset(0 0 100% 0)", transition: { duration: 0.4, ease: EASE_OUT } }}
+          >
+            <div className="min-h-full flex flex-col px-6 pt-28 pb-10">
               <motion.nav
-                className="flex flex-col gap-5 text-xl"
+                className="flex-1"
                 initial="hidden"
                 animate="show"
-                variants={{ show: { transition: { staggerChildren: 0.045, delayChildren: 0.12 } } }}
+                variants={{ show: { transition: { staggerChildren: 0.05, delayChildren: 0.2 } } }}
               >
-                <motion.div variants={itemMobile}><Link to="/">Inicio</Link></motion.div>
+                <motion.p variants={itemMobile} className="rotulo text-white/40 mb-6">Catálogo</motion.p>
 
-                {catalogo.map((cat) =>
-                  cat.subcategorias ? (
-                    <motion.div key={cat.slug} variants={itemMobile}>
-                      <button
-                        onClick={() => setActiveSubmenu(activeSubmenu === cat.slug ? null : cat.slug)}
-                        className="flex items-center justify-between w-full"
-                        aria-expanded={activeSubmenu === cat.slug}
-                      >
-                        <span>{cat.nombre}</span>
-                        <ChevronDown
-                          className={`w-4 h-4 transition-transform duration-300 ${activeSubmenu === cat.slug ? "rotate-180" : ""}`}
-                        />
-                      </button>
-                      <AnimatePresence initial={false}>
-                        {activeSubmenu === cat.slug && (
-                          <motion.ul
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1, transition: { duration: 0.3, ease: EASE_OUT } }}
-                            exit={{ height: 0, opacity: 0, transition: { duration: 0.2, ease: EASE_OUT } }}
-                            className="pl-4 overflow-hidden flex flex-col text-base text-gray-600"
-                          >
-                            <li className="pt-3">
-                              <Link to={`/${cat.slug}`}>Ver todo</Link>
-                            </li>
-                            {cat.subcategorias.map((sub) => (
-                              <li key={sub.slug} className="pt-2">
-                                <Link to={`/${cat.slug}/${sub.slug}`}>{sub.nombre}</Link>
-                              </li>
-                            ))}
-                          </motion.ul>
-                        )}
-                      </AnimatePresence>
-                    </motion.div>
-                  ) : (
-                    <motion.div key={cat.slug} variants={itemMobile}>
-                      <Link to={`/${cat.slug}`}>{cat.nombre}</Link>
-                    </motion.div>
-                  )
-                )}
+                <ul className="border-t border-white/10">
+                  {catalogo.map((cat, i) => {
+                    const abierto = activeSubmenu === cat.slug;
+                    return (
+                      <motion.li key={cat.slug} variants={itemMobile} className="border-b border-white/10">
+                        <div className="flex items-center">
+                          <Link to={`/${cat.slug}`} className="flex-1 flex items-baseline gap-4 py-4">
+                            <span className="rotulo text-white/40 w-6 tabular-nums">{String(i + 1).padStart(2, "0")}</span>
+                            <span className="text-[2rem] leading-none font-light tracking-[-0.03em]">{cat.nombre}</span>
+                          </Link>
+                          {cat.subcategorias && (
+                            <button
+                              onClick={() => setActiveSubmenu(abierto ? null : cat.slug)}
+                              className="presionable w-11 h-11 -mr-2 flex items-center justify-center"
+                              aria-expanded={abierto}
+                              aria-label={`${abierto ? "Cerrar" : "Ver"} ${cat.nombre}`}
+                            >
+                              {/* + que gira a × */}
+                              <span
+                                className={`relative block w-4 h-4 transition-transform duration-500 ${abierto ? "rotate-45" : ""}`}
+                                style={{ transitionTimingFunction: "var(--ease-out)" }}
+                              >
+                                <span className="absolute top-1/2 left-0 w-full h-px bg-white" />
+                                <span className="absolute left-1/2 top-0 h-full w-px bg-white" />
+                              </span>
+                            </button>
+                          )}
+                        </div>
 
-                {linksSimples.map((l) => (
-                  <motion.div key={l.to} variants={itemMobile}>
-                    <Link to={l.to}>{l.label}</Link>
-                  </motion.div>
-                ))}
+                        <AnimatePresence initial={false}>
+                          {abierto && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1, transition: { duration: 0.45, ease: EASE_OUT } }}
+                              exit={{ height: 0, opacity: 0, transition: { duration: 0.25, ease: EASE_OUT } }}
+                              className="overflow-hidden"
+                            >
+                              <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-5 [scrollbar-width:none]">
+                                {cat.subcategorias.map((sub, j) => (
+                                  <motion.div
+                                    key={sub.slug}
+                                    className="snap-start shrink-0 w-[36vw] max-w-[170px]"
+                                    initial={{ opacity: 0, x: 16 }}
+                                    animate={{ opacity: 1, x: 0, transition: { duration: 0.4, ease: EASE_OUT, delay: 0.05 * j } }}
+                                  >
+                                    <Link to={`/${cat.slug}/${sub.slug}`} className="block presionable">
+                                      <div className="aspect-[3/4] overflow-hidden bg-white/5">
+                                        <img src={sub.fotos[0].src} alt="" decoding="async" className="w-full h-full object-cover" />
+                                      </div>
+                                      <p className="mt-2 text-sm">{sub.nombre}</p>
+                                    </Link>
+                                  </motion.div>
+                                ))}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </motion.li>
+                    );
+                  })}
+                </ul>
+
+                <motion.div variants={itemMobile} className="flex gap-8 mt-10 text-2xl font-light tracking-tight">
+                  <Link to="/" className="link-linea">Inicio</Link>
+                  {linksSimples.map((l) => (
+                    <Link key={l.to} to={l.to} className="link-linea">{l.label}</Link>
+                  ))}
+                </motion.div>
               </motion.nav>
-            </motion.div>
-          </>
+
+              {/* Contacto al pie del menú */}
+              <motion.div
+                className="mt-12 pt-6 border-t border-white/10 space-y-5"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1, transition: { delay: 0.5, duration: 0.5 } }}
+              >
+                <a
+                  href="https://wa.me/5493884723621"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="presionable flex items-center justify-between bg-white text-black px-5 py-4 text-xs uppercase tracking-[0.2em]"
+                >
+                  Escribinos por WhatsApp
+                  <span aria-hidden>→</span>
+                </a>
+                <div className="flex justify-between text-xs uppercase tracking-[0.2em] text-white/50">
+                  <a href="https://www.instagram.com/bakar.sas/" target="_blank" rel="noreferrer">Instagram</a>
+                  <a href="tel:+5493884723621">Llamar</a>
+                  <a href="mailto:cocinas@bakarsas.com">Mail</a>
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </motion.header>
