@@ -21,5 +21,7 @@ export function iniciarScroll() {
 }
 
 export const irArriba = () => (lenis ? lenis.scrollTo(0, { immediate: true }) : window.scrollTo(0, 0));
+export const irArribaSuave = () =>
+  lenis ? lenis.scrollTo(0, { duration: 1.6 }) : window.scrollTo({ top: 0, behavior: "smooth" });
 export const frenarScroll = () => lenis?.stop();
 export const soltarScroll = () => lenis?.start();
