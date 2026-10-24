@@ -4,7 +4,7 @@ import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-
 import { Menu, X, ChevronDown } from "lucide-react";
 import logo from "../assets/logo.webp";
 import { catalogo } from "../data/catalogo";
-import { EASE_OUT, EASE_DRAWER, DUR } from "../lib/motion";
+import { EASE_OUT, EASE_DRAWER } from "../lib/motion";
 import { frenarScroll, soltarScroll } from "../lib/scroll";
 
 const linksSimples = [
@@ -22,6 +22,7 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [oculto, setOculto] = useState(false);
   const [open, setOpen] = useState(null);
+  const [vista, setVista] = useState(null); // subcategoría bajo el mouse en el panel
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState(null);
   const { pathname } = useLocation();
@@ -59,14 +60,20 @@ export default function Navbar() {
   }, [mobileMenuOpen]);
 
   // Sobre el hero de la home la barra es transparente, con logo y textos en blanco
-  const sobreHero = esHome && !isScrolled && !mobileMenuOpen;
+  const sobreHero = esHome && !isScrolled && !mobileMenuOpen && !open;
+  const abierta = catalogo.find((c) => c.slug === open);
+  const abrir = (cat) => {
+    setOpen(cat.subcategorias ? cat.slug : null);
+    setVista(cat.subcategorias ? cat.subcategorias[0].slug : null);
+  };
   const navLinkClass = ({ isActive }) => `link-linea ${isActive ? "activo" : ""}`;
 
   return (
     <motion.header
       className={`fixed top-0 left-0 w-full z-50 transition-[background-color,box-shadow,color] duration-500 ${
-        sobreHero ? "bg-transparent text-white" : "bg-white/90 backdrop-blur-md text-black"
+        sobreHero ? "bg-transparent text-white" : open ? "bg-white text-black" : "bg-white/90 backdrop-blur-md text-black"
       } ${isScrolled && !sobreHero ? "shadow-[0_1px_0_rgba(0,0,0,0.06)]" : ""}`}
+      onMouseLeave={() => setOpen(null)}
       animate={{ y: oculto && !mobileMenuOpen && !open ? "-100%" : "0%" }}
       transition={{ duration: 0.35, ease: EASE_OUT }}
     >
@@ -88,51 +95,25 @@ export default function Navbar() {
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-6">
-          <NavLink to="/" end className={navLinkClass}>Inicio</NavLink>
+          <NavLink to="/" end className={navLinkClass} onMouseEnter={() => setOpen(null)}>Inicio</NavLink>
 
           {catalogo.map((cat) => (
-            <div
-              className="relative"
+            <NavLink
               key={cat.slug}
-              onMouseEnter={() => cat.subcategorias && setOpen(cat.slug)}
-              onMouseLeave={() => setOpen(null)}
+              to={`/${cat.slug}`}
+              className={({ isActive }) => `link-linea ${isActive || open === cat.slug ? "activo" : ""}`}
+              onMouseEnter={() => abrir(cat)}
+              onFocus={() => abrir(cat)}
+              aria-expanded={cat.subcategorias ? open === cat.slug : undefined}
             >
-              <NavLink to={`/${cat.slug}`} className={navLinkClass}>
-                {cat.nombre}
-              </NavLink>
-              <AnimatePresence>
-                {open === cat.slug && (
-                  // pt-3 deja un "puente" para que el mouse no pierda el hover al bajar al menú.
-                  // Crece desde la esquina del link que lo abrió.
-                  <motion.div
-                    className="absolute top-full -left-4 pt-3 origin-top-left"
-                    initial={{ opacity: 0, scale: 0.96, y: -4 }}
-                    animate={{ opacity: 1, scale: 1, y: 0, transition: { duration: DUR.rapido, ease: EASE_OUT } }}
-                    exit={{ opacity: 0, scale: 0.98, transition: { duration: 0.12 } }}
-                  >
-                    <ul className="bg-white text-black shadow-[0_12px_40px_-12px_rgba(0,0,0,0.25)] rounded-md py-2 min-w-[180px]">
-                      {cat.subcategorias.map((sub) => (
-                        <li key={sub.slug}>
-                          <Link
-                            to={`/${cat.slug}/${sub.slug}`}
-                            className="group flex items-center justify-between px-4 py-2 hover:bg-gray-50 transition-colors whitespace-nowrap"
-                          >
-                            {sub.nombre}
-                            <span className="flecha opacity-0 group-hover:opacity-100 transition-opacity text-gray-400" aria-hidden>
-                              →
-                            </span>
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+              {cat.nombre}
+            </NavLink>
           ))}
 
           {linksSimples.map((l) => (
-            <NavLink key={l.to} to={l.to} className={navLinkClass}>{l.label}</NavLink>
+            <NavLink key={l.to} to={l.to} className={navLinkClass} onMouseEnter={() => setOpen(null)}>
+              {l.label}
+            </NavLink>
           ))}
         </nav>
 
@@ -145,6 +126,108 @@ export default function Navbar() {
           <Menu className="w-6 h-6" />
         </button>
       </div>
+
+      {/* Panel de catálogo (desktop): baja como una persiana debajo de la barra.
+          A la izquierda la categoría, al medio las subcategorías en grande y a la
+          derecha una foto que cambia según dónde está el mouse. */}
+      <AnimatePresence>
+        {abierta && (
+          <motion.div
+            key="panel"
+            className="hidden md:block absolute top-full left-0 w-full bg-white text-black border-t border-gray-100 shadow-[0_30px_60px_-30px_rgba(0,0,0,0.25)]"
+            initial={{ clipPath: "inset(0 0 100% 0)" }}
+            animate={{ clipPath: "inset(0 0 0% 0)", transition: { duration: 0.5, ease: EASE_OUT } }}
+            exit={{ clipPath: "inset(0 0 100% 0)", transition: { duration: 0.25, ease: EASE_OUT } }}
+          >
+            <div className="contenedor grid grid-cols-12 gap-8 py-12">
+              <motion.div
+                key={`info-${abierta.slug}`}
+                className="col-span-3 flex flex-col justify-between"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0, transition: { duration: 0.4, ease: EASE_OUT, delay: 0.1 } }}
+              >
+                <div>
+                  <p className="rotulo mb-4">
+                    {String(catalogo.indexOf(abierta) + 1).padStart(2, "0")} — Catálogo
+                  </p>
+                  <p className="text-gray-500 leading-relaxed max-w-[16rem]">{abierta.bajada}</p>
+                </div>
+                <Link to={`/${abierta.slug}`} className="group inline-flex items-center gap-3 text-xs uppercase tracking-[0.2em] mt-8">
+                  <span className="link-linea">Ver todo {abierta.nombre.toLowerCase()}</span>
+                  <span className="flecha" aria-hidden>→</span>
+                </Link>
+              </motion.div>
+
+              <motion.ul
+                key={`lista-${abierta.slug}`}
+                className="col-span-5 col-start-5"
+                initial="hidden"
+                animate="show"
+                variants={{ show: { transition: { staggerChildren: 0.04, delayChildren: 0.08 } } }}
+              >
+                {abierta.subcategorias.map((sub, i) => (
+                  <motion.li
+                    key={sub.slug}
+                    variants={{
+                      hidden: { opacity: 0, y: 10 },
+                      show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: EASE_OUT } },
+                    }}
+                  >
+                    <Link
+                      to={`/${abierta.slug}/${sub.slug}`}
+                      onMouseEnter={() => setVista(sub.slug)}
+                      onFocus={() => setVista(sub.slug)}
+                      className={`group flex items-baseline gap-5 py-2 border-b border-gray-100 transition-colors duration-300 ${
+                        vista === sub.slug ? "text-black" : "text-gray-300"
+                      }`}
+                    >
+                      <span className="rotulo w-6 tabular-nums">{String(i + 1).padStart(2, "0")}</span>
+                      <span className="text-3xl lg:text-4xl font-light tracking-[-0.03em] flex-1">{sub.nombre}</span>
+                      <span
+                        className={`flecha text-xl transition-opacity duration-300 ${vista === sub.slug ? "opacity-100" : "opacity-0"}`}
+                        aria-hidden
+                      >
+                        →
+                      </span>
+                    </Link>
+                  </motion.li>
+                ))}
+              </motion.ul>
+
+              <div className="col-span-3 col-start-10 relative aspect-[4/5] overflow-hidden bg-[#ece9e4]">
+                <AnimatePresence initial={false}>
+                  {abierta.subcategorias
+                    .filter((s) => s.slug === vista)
+                    .map((s) => (
+                      <motion.img
+                        key={s.fotos[0].src}
+                        src={s.fotos[0].src}
+                        alt=""
+                        className="absolute inset-0 w-full h-full object-cover"
+                        initial={{ opacity: 0, scale: 1.06 }}
+                        animate={{ opacity: 1, scale: 1, transition: { duration: 0.6, ease: EASE_OUT } }}
+                        exit={{ opacity: 0, transition: { duration: 0.3 } }}
+                      />
+                    ))}
+                </AnimatePresence>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Velo sobre la página mientras el panel está abierto */}
+      <AnimatePresence>
+        {abierta && (
+          <motion.div
+            className="hidden md:block absolute inset-x-0 top-full h-screen bg-black/25 -z-20 pointer-events-none"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Menú lateral mobile */}
       <AnimatePresence>
